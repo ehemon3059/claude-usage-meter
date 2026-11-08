@@ -15,5 +15,33 @@
   "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.emon.usagewidget",
+    "productName": "Usage Widget",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "scraper.js",
+      "parser.js",
+      "state.js",
+      "alerts.js",
+      "preload.js",
+      "widget.html",
+      "widget.css",
+      "gauges.js",
+      "widget.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "artifactName": "UsageWidget-Setup.exe"
+    }
   }
 }
