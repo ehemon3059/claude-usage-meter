@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "test": "node --test \"tests/*.test.js\"",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "dev:gauges": "node scripts/start.js scripts/dev-gauges.js"
   },
   "dependencies": {
     "electron-store": "^8.2.0"

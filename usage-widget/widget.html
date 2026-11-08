@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:" />
+  <title>Usage Widget</title>
+  <link rel="stylesheet" href="widget.css" />
+</head>
+<body>
+  <div class="panel">
+    <div id="stale" class="stale" hidden>Stale</div>
+    <div class="gauges">
+      <svg id="speedo" class="gauge" role="img" aria-label="Current session usage"></svg>
+      <svg id="fuel" class="gauge" role="img" aria-label="Weekly usage"></svg>
+    </div>
+  </div>
+  <div id="dev" class="dev" hidden>
+    <label>Session <input id="dev-session" type="range" min="0" max="100" value="57" /></label>
+    <label>Week <input id="dev-week" type="range" min="0" max="100" value="32" /></label>
+  </div>
+  <script src="gauges.js"></script>
+  <script src="widget.js"></script>
+</body>
+</html>
