@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const { fetchUsagePage, LOGIN_URL, PARTITION } = require('./scraper');
+const { fetchUsagePage, getUsage, LOGIN_URL, PARTITION } = require('./scraper');
 
 let loginWin = null;
 
@@ -21,13 +21,12 @@ function openLoginWindow() {
 }
 
 app.whenReady().then(async () => {
-  const result = await fetchUsagePage();
-  console.log('status:', result.status);
+  const result = await getUsage();
+  console.log(JSON.stringify(result, null, 2));
   if (result.status === 'login') return openLoginWindow();
-  if (result.status === 'ok') {
-    const out = path.join(__dirname, 'tests', 'fixtures', 'usage-page.txt');
-    fs.writeFileSync(out, result.text);
-    console.log('captured', result.text.length, 'chars ->', out);
+  if (result.status === 'parse_fail') {
+    fs.writeFileSync(path.join(__dirname, 'tests', 'fixtures', 'usage-page.txt'), result.rawText);
+    console.log('raw text saved to tests/fixtures/usage-page.txt');
   }
   app.quit();
 });

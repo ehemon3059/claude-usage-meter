@@ -1,0 +1,11 @@
+PROVISIONAL FIXTURE (spec wording) - replace with real capture from `npm start` after logging in.
+Settings
+Usage
+Plan usage limits
+Current session
+Resets 4:50 PM
+57% used
+Weekly limits
+This week
+Resets Thu 5:00 PM
+32% used

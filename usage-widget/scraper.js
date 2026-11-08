@@ -1,4 +1,5 @@
 const { BrowserWindow, session } = require('electron');
+const { parseUsage } = require('./parser');
 
 const PARTITION = 'persist:claude';
 const LOGIN_URL = 'https://claude.ai/login';
@@ -59,4 +60,13 @@ function fetchUsagePage() {
   });
 }
 
-module.exports = { fetchUsagePage, LOGIN_URL, USAGE_URL, PARTITION };
+/** @returns {Promise<{status:'ok',session,week}|{status:'login'|'blocked'|'offline'}|{status:'parse_fail',rawText:string}>} */
+async function getUsage() {
+  const page = await fetchUsagePage();
+  if (page.status !== 'ok') return { status: page.status };
+  const { session: s, week } = parseUsage(page.text);
+  if (!s && !week) return { status: 'parse_fail', rawText: page.text };
+  return { status: 'ok', session: s, week };
+}
+
+module.exports = { fetchUsagePage, getUsage, LOGIN_URL, USAGE_URL, PARTITION };
