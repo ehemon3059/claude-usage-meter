@@ -44,7 +44,7 @@ function fetchUsagePage() {
         const url = win.webContents.getURL();
         const title = win.webContents.getTitle();
         const text = await win.webContents.executeJavaScript('document.body.innerText');
-        if (url.includes('/login')) return finish({ status: 'login' });
+        if (/\/(login|logout)\b/.test(url)) return finish({ status: 'login' });
         if (/just a moment|verify you are human/i.test(title + '\n' + text)) {
           return finish({ status: 'blocked' });
         }
