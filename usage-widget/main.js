@@ -8,6 +8,7 @@ const { evaluateAlerts } = require('./alerts');
 
 const POLL_MS = 180000; // 3 min
 const MIN_POLL_MS = 120000; // never scrape more often than 2 min
+const FORCE_GAP_MS = 30000;
 const WIDGET_SIZE = { width: 440, height: 260 };
 
 const store = new Store();
@@ -17,10 +18,9 @@ let inFlight = null;
 let lastScrapeAt = 0;
 let uiState = { session: null, week: null, stale: false, message: null, updatedAt: null };
 
-function openLoginWindow() {
+function openLoginWindow({ focus = true } = {}) {
   if (loginWin && !loginWin.isDestroyed()) {
-    loginWin.show();
-    loginWin.focus();
+    if (focus) { loginWin.show(); loginWin.focus(); }
     return;
   }
   loginWin = new BrowserWindow({
@@ -33,7 +33,7 @@ function openLoginWindow() {
   loginWin.webContents.on('did-navigate', async (_e, url) => {
     let u;
     try { u = new URL(url); } catch { return; }
-    if (u.hostname.endsWith('claude.ai') && !u.pathname.startsWith('/login')) {
+    if (u.hostname.endsWith('claude.ai') && !/^\/(login|logout)/.test(u.pathname)) {
       await refresh({ force: true });
       if (uiState.message === null && loginWin && !loginWin.isDestroyed()) loginWin.close();
     }
@@ -104,7 +104,7 @@ function updateTray() {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Refresh now', click: refreshNow },
     { label: 'Show/Hide', click: toggleWidget },
-    { label: 'Re-login', click: openLoginWindow },
+    { label: 'Re-login', click: () => openLoginWindow() },
     {
       label: 'Start with Windows',
       type: 'checkbox',
@@ -125,7 +125,9 @@ function createTray() {
 /** Single-flight scrape. Non-forced calls inside the 2-minute floor return the cached state. */
 function refresh({ force = false } = {}) {
   if (inFlight) return inFlight;
-  if (!force && Date.now() - lastScrapeAt < MIN_POLL_MS) return Promise.resolve();
+  const since = Date.now() - lastScrapeAt;
+  // Forced scrapes (startup, post-login) still keep a 30s gap; normal ones keep the 2-minute floor.
+  if (since < (force ? FORCE_GAP_MS : MIN_POLL_MS) && lastScrapeAt) return Promise.resolve();
   inFlight = (async () => {
     try {
       lastScrapeAt = Date.now();
@@ -137,7 +139,7 @@ function refresh({ force = false } = {}) {
       uiState = { ...merged, updatedAt: result.status === 'ok' ? Date.now() : (stored && stored.updatedAt) || null };
       if (result.status === 'ok') store.set('lastUsage.updatedAt', uiState.updatedAt);
       if (result.status === 'ok') runAlerts(prevState, uiState);
-      if (result.status === 'login' || result.status === 'blocked') openLoginWindow();
+      if (result.status === 'login' || result.status === 'blocked') openLoginWindow({ focus: false });
       if (result.status === 'parse_fail') logParseFailure(result.rawText);
       pushState();
     } catch (err) {
