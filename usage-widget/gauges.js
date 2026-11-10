@@ -5,8 +5,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   // All gauge sizes live here (SVG user units; the CSS scales the <svg> to the window).
   const GAUGE_CONFIG = {
-    speedo: { size: 200, radius: 78, start: -135, end: 135, needleLength: 62 },
-    fuel: { size: 200, radius: 78, start: -90, end: 90, needleLength: 62 },
+    // resetY: baseline of the "Resets ..." line, above the dial.
+    speedo: { size: 200, radius: 78, start: -135, end: 135, needleLength: 62, resetY: 11 },
+    fuel: { size: 200, radius: 78, start: -90, end: 90, needleLength: 62, resetY: 11 },
     zones: {
       speedo: [
         { from: 0, to: 70, color: 'green' },
@@ -91,7 +92,7 @@
     }
     el('text', { x: C, y: C + 38, class: 'readout', 'text-anchor': 'middle' }, svg, '--');
     el('text', { x: C, y: 192, class: 'caption', 'text-anchor': 'middle' }, svg, 'CURRENT SESSION');
-    el('text', { x: C, y: 176, class: 'reset', 'text-anchor': 'middle' }, svg, '');
+    el('text', { x: C, y: cfg.resetY, class: 'reset', 'text-anchor': 'middle' }, svg, '');
     svg._needle = drawNeedle(svg, cfg);
     setNeedle(svg._needle, cfg.start);
   }
@@ -117,7 +118,7 @@
       fill: 'none',
     }, svg);
     el('text', { x: C, y: C + 28, class: 'readout small', 'text-anchor': 'middle' }, svg, '--');
-    el('text', { x: C, y: 176, class: 'reset', 'text-anchor': 'middle' }, svg, '');
+    el('text', { x: C, y: cfg.resetY, class: 'reset', 'text-anchor': 'middle' }, svg, '');
     el('text', { x: C, y: 192, class: 'caption', 'text-anchor': 'middle' }, svg, 'THIS WEEK');
     svg._needle = drawNeedle(svg, cfg);
     setNeedle(svg._needle, cfg.start);

@@ -39,3 +39,11 @@ test('isLowFuel is true only below 10% remaining', () => {
   assert.strictEqual(G.isLowFuel(90), false);
   assert.strictEqual(G.isLowFuel(100), true);
 });
+
+test('reset time sits above each dial, inside the 200x200 view', () => {
+  for (const key of ['speedo', 'fuel']) {
+    const cfg = G.GAUGE_CONFIG[key];
+    const arcTop = 100 - cfg.radius - 3; // arc stroke is 6 units wide
+    assert.ok(cfg.resetY > 0 && cfg.resetY < arcTop - 4, `${key} resetY ${cfg.resetY} vs arc top ${arcTop}`);
+  }
+});

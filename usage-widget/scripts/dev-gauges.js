@@ -2,7 +2,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 app.whenReady().then(() => {
-  const win = new BrowserWindow({ width: 460, height: 340, backgroundColor: '#222' });
+  const win = new BrowserWindow({ width: 760, height: 440, backgroundColor: '#222' });
   win.loadFile(path.join(__dirname, '..', 'widget.html'), { query: { dev: '1' } });
 });
 app.on('window-all-closed', () => app.quit());

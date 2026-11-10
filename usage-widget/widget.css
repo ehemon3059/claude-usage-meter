@@ -1,19 +1,46 @@
 :root {
   --green: #3ddc84; --yellow: #ffc83d; --red: #ff4d4d;
-  --text: #e8eef5; --dim: #7e8a99;
+  --text: #e8eef5; --dim: #7e8a99; --accent: #ff6b3d;
+  --line: #1f2733; --btn: #161d26; --btn-hover: #1d2631; --btn-border: #263140;
 }
-html, body { margin: 0; background: transparent; font-family: "Segoe UI", sans-serif; user-select: none; overflow: hidden; }
-body { -webkit-app-region: drag; }
-.panel {
-  position: relative; box-sizing: border-box; width: 440px; height: 260px; padding: 12px 10px;
-  background: linear-gradient(160deg, #11161d, #0a0d12); border: 1px solid #1f2733; border-radius: 22px;
+html, body { height: 100%; margin: 0; }
+body {
+  display: flex; flex-direction: column; overflow: hidden; user-select: none;
+  background: linear-gradient(160deg, #11161d, #0a0d12);
+  color: var(--text); font-family: "Segoe UI", sans-serif;
 }
-.gauges { display: flex; justify-content: space-between; }
-.gauge { width: 205px; height: 205px; overflow: visible; }
-.stale {
-  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-  font-size: 11px; color: var(--yellow); border: 1px solid var(--yellow); border-radius: 8px; padding: 1px 8px;
+
+/* Three equal dials that scale with the window (each SVG keeps its 200x200 viewBox). */
+.dials {
+  flex: 1; min-height: 0; box-sizing: border-box;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr);
+  gap: 2vw; padding: 18px 20px 10px;
 }
+.dial { width: 100%; height: 100%; overflow: visible; }
+
+/* Bottom bar */
+.bar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border-top: 1px solid var(--line); background: rgba(0, 0, 0, 0.25); font-size: 12px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; flex: none;
+  color: var(--text); background: var(--btn); border: 1px solid var(--btn-border); border-radius: 8px;
+  font: inherit; cursor: pointer;
+}
+.btn:hover { background: var(--btn-hover); border-color: #34425a; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:disabled { cursor: default; opacity: 0.7; }
+.icon { width: 14px; height: 14px; fill: currentColor; }
+.icon-stroke { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.btn.busy .icon { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.status { min-width: 0; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status.warn { color: var(--yellow); }
+.spacer { flex: 1; }
+.author-label { color: var(--dim); flex: none; }
+
+/* Gauges */
 .arc { stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 3px currentColor); }
 .arc-green { stroke: var(--green); color: var(--green); }
 .arc-yellow { stroke: var(--yellow); color: var(--yellow); }
@@ -26,13 +53,25 @@ body { -webkit-app-region: drag; }
 .readout.small { font-size: 17px; }
 .readout.zone-yellow { fill: var(--yellow); }
 .readout.zone-red { fill: var(--red); }
-.reset { fill: var(--text); font-size: 11px; }
+.reset { fill: var(--text); font-size: 13px; font-weight: 600; }
 .caption { fill: var(--dim); font-size: 9px; letter-spacing: 1.5px; }
 .pump { stroke: var(--dim); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .needle { transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: 100px 100px; }
-.needle-line { stroke: #ff6b3d; stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 3px #ff6b3d); }
-.hub { fill: #ff6b3d; }
+.needle-line { stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--accent)); }
+.hub { fill: var(--accent); }
 .low-fuel .readout, .low-fuel .arc-red, .low-fuel .e-label { animation: blink 1s steps(2, start) infinite; }
 @keyframes blink { to { opacity: 0.25; } }
-.dev { -webkit-app-region: no-drag; color: var(--text); font-size: 12px; padding: 8px 14px; display: flex; gap: 16px; }
-.dev[hidden], .stale[hidden] { display: none; }
+
+/* Clock */
+.clock-face { fill: #0d1218; stroke: #2a3442; stroke-width: 1.5; }
+.clock-num { fill: var(--text); font-size: 11px; }
+.clock-zone { fill: var(--dim); font-size: 8px; letter-spacing: 2px; }
+.clock-digital { fill: var(--text); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.clock-date { fill: var(--dim); font-size: 8px; }
+.hand { stroke-linecap: round; }
+.hand-hour { stroke: var(--text); stroke-width: 4; }
+.hand-minute { stroke: var(--text); stroke-width: 2.5; }
+.hand-second { stroke: var(--accent); stroke-width: 1.2; filter: drop-shadow(0 0 2px var(--accent)); }
+
+.dev { color: var(--text); font-size: 12px; padding: 8px 14px; display: flex; gap: 16px; }
+.dev[hidden] { display: none; }

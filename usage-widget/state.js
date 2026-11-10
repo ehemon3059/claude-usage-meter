@@ -1,4 +1,4 @@
-// Pure helpers for main.js: merging scrape results into UI state and keeping the window on-screen.
+// Pure helpers for main.js: merging scrape results into UI state, window bounds, refresh gating, links.
 const MESSAGES = {
   login: 'Please log in',
   blocked: 'Verification needed',
@@ -29,14 +29,51 @@ function intersects(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
-/** Keep saved {x,y} if the window would be visible on some display, else primary (first) top-right. */
-function clampBounds(saved, workAreas, size) {
-  if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
-    const rect = { x: saved.x, y: saved.y, width: size.width, height: size.height };
-    if (workAreas.some((wa) => intersects(rect, wa))) return { x: saved.x, y: saved.y };
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+
+/**
+ * Window bounds to open with. A saved window that touches a display is fitted fully onto that
+ * display (size clamped to [minimum, display], position pulled inside); otherwise the window is
+ * centered on the primary (first) display.
+ */
+function restoreBounds(saved, workAreas, { width, height, minWidth, minHeight }) {
+  const s = saved || {};
+  const want = {
+    width: Number.isFinite(s.width) ? s.width : width,
+    height: Number.isFinite(s.height) ? s.height : height,
+  };
+  const hasPos = Number.isFinite(s.x) && Number.isFinite(s.y);
+  const home = hasPos && workAreas.find((wa) => intersects({ x: s.x, y: s.y, ...want }, wa));
+  const wa = home || workAreas[0];
+  const size = {
+    width: clamp(want.width, minWidth, wa.width),
+    height: clamp(want.height, minHeight, wa.height),
+  };
+  if (home) {
+    return {
+      x: clamp(s.x, wa.x, wa.x + wa.width - size.width),
+      y: clamp(s.y, wa.y, wa.y + wa.height - size.height),
+      ...size,
+    };
   }
-  const wa = workAreas[0];
-  return { x: wa.x + wa.width - size.width - 20, y: wa.y + 20 };
+  return {
+    x: wa.x + Math.round((wa.width - size.width) / 2),
+    y: wa.y + Math.round((wa.height - size.height) / 2),
+    ...size,
+  };
 }
 
-module.exports = { mergeUsage, clampBounds, MESSAGES };
+/** Milliseconds until another scrape is allowed (0 = now). lastScrapeAt 0 means never scraped. */
+function refreshWaitMs(lastScrapeAt, now, gapMs) {
+  if (!lastScrapeAt) return 0;
+  return Math.max(0, gapMs - (now - lastScrapeAt));
+}
+
+// The page asks for a link by key; only these URLs can ever be opened.
+const AUTHOR_LINKS = {
+  github: 'https://github.com/ehemon3059/claude-usage-meter',
+  facebook: 'https://www.facebook.com/eh.emon3059/',
+};
+const authorLink = (key) => (Object.hasOwn(AUTHOR_LINKS, key) ? AUTHOR_LINKS[key] : null);
+
+module.exports = { mergeUsage, restoreBounds, refreshWaitMs, authorLink, MESSAGES };
