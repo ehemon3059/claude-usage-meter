@@ -48,13 +48,15 @@
   }
 
   // ---- SVG (browser only); same 200x200 user space as the gauges ----
+  // The face sits a little high so the date line and caption under it line up with the
+  // gauges' reset line and caption (resetY / captionY in gauges.js).
+  const CLOCK_CONFIG = { cx: 100, cy: 88, radius: 70, dateY: 185, captionY: 202, viewHeight: 210 };
   const NS = 'http://www.w3.org/2000/svg';
-  const C = 100;
-  const FACE_R = 76;
+  const { cx: CX, cy: CY, radius: FACE_R } = CLOCK_CONFIG;
 
   function pt(angle, r) {
     const a = (angle * Math.PI) / 180;
-    return [C + r * Math.sin(a), C - r * Math.cos(a)];
+    return [CX + r * Math.sin(a), CY - r * Math.cos(a)];
   }
   function el(tag, attrs, parent, text) {
     const e = document.createElementNS(NS, tag);
@@ -63,11 +65,11 @@
     if (parent) parent.appendChild(e);
     return e;
   }
-  const hand = (svg, cls, tail, length) => el('line', { x1: C, y1: C + tail, x2: C, y2: C - length, class: `hand ${cls}` }, svg);
+  const hand = (svg, cls, tail, length) => el('line', { x1: CX, y1: CY + tail, x2: CX, y2: CY - length, class: `hand ${cls}` }, svg);
 
   function buildClock(svg) {
-    svg.setAttribute('viewBox', '0 0 200 200');
-    el('circle', { cx: C, cy: C, r: FACE_R, class: 'clock-face' }, svg);
+    svg.setAttribute('viewBox', `0 0 200 ${CLOCK_CONFIG.viewHeight}`);
+    el('circle', { cx: CX, cy: CY, r: FACE_R, class: 'clock-face' }, svg);
     for (let i = 0; i < 60; i++) {
       const major = i % 5 === 0;
       const [x1, y1] = pt(i * 6, FACE_R - (major ? 9 : 5));
@@ -75,30 +77,28 @@
       el('line', { x1, y1, x2, y2, class: major ? 'tick tick-major' : 'tick' }, svg);
     }
     for (let h = 1; h <= 12; h++) {
-      const [x, y] = pt(h * 30, FACE_R - 19);
+      const [x, y] = pt(h * 30, FACE_R - 18);
       el('text', { x, y, class: 'clock-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }, svg, h);
     }
-    el('text', { x: C, y: C - 24, class: 'clock-zone', 'text-anchor': 'middle' }, svg, 'DHAKA');
-    svg._digital = el('text', { x: C, y: C + 30, class: 'clock-digital', 'text-anchor': 'middle' }, svg, '');
-    svg._date = el('text', { x: C, y: C + 42, class: 'clock-date', 'text-anchor': 'middle' }, svg, '');
-    svg._caption = el('text', { x: C, y: 192, class: 'caption', 'text-anchor': 'middle' }, svg, '');
+    el('text', { x: CX, y: CY - 24, class: 'clock-zone', 'text-anchor': 'middle' }, svg, 'DHAKA');
+    svg._date = el('text', { x: CX, y: CLOCK_CONFIG.dateY, class: 'clock-date', 'text-anchor': 'middle' }, svg, '');
+    svg._caption = el('text', { x: CX, y: CLOCK_CONFIG.captionY, class: 'caption', 'text-anchor': 'middle' }, svg, '');
     svg._hands = {
-      hour: hand(svg, 'hand-hour', 8, 38),
-      minute: hand(svg, 'hand-minute', 10, 56),
-      second: hand(svg, 'hand-second', 14, 64),
+      hour: hand(svg, 'hand-hour', 7, 35),
+      minute: hand(svg, 'hand-minute', 9, 52),
+      second: hand(svg, 'hand-second', 13, 59),
     };
-    el('circle', { cx: C, cy: C, r: 4, class: 'hub' }, svg);
+    el('circle', { cx: CX, cy: CY, r: 4, class: 'hub' }, svg);
   }
 
   /** synced=false means the internet time servers were unreachable and the PC clock is shown. */
   function renderClock(svg, utcMs, synced) {
     if (!svg._hands) buildClock(svg);
     const a = handAngles(utcMs);
-    for (const k in svg._hands) svg._hands[k].setAttribute('transform', `rotate(${a[k]} ${C} ${C})`);
-    svg._digital.textContent = formatTime(utcMs);
+    for (const k in svg._hands) svg._hands[k].setAttribute('transform', `rotate(${a[k]} ${CX} ${CY})`);
     svg._date.textContent = formatDate(utcMs);
     svg._caption.textContent = synced ? 'BANGLADESH TIME' : 'BD TIME · PC CLOCK';
   }
 
-  return { BD_OFFSET_MS, bangladeshParts, handAngles, formatTime, formatDate, formatAgo, renderClock };
+  return { BD_OFFSET_MS, CLOCK_CONFIG, bangladeshParts, handAngles, formatTime, formatDate, formatAgo, renderClock };
 });

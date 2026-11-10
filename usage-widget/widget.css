@@ -66,8 +66,7 @@ body {
 .clock-face { fill: #0d1218; stroke: #2a3442; stroke-width: 1.5; }
 .clock-num { fill: var(--text); font-size: 11px; }
 .clock-zone { fill: var(--dim); font-size: 8px; letter-spacing: 2px; }
-.clock-digital { fill: var(--text); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.clock-date { fill: var(--dim); font-size: 8px; }
+.clock-date { fill: var(--text); font-size: 13px; font-weight: 600; }
 .hand { stroke-linecap: round; }
 .hand-hour { stroke: var(--text); stroke-width: 4; }
 .hand-minute { stroke: var(--text); stroke-width: 2.5; }

@@ -5,9 +5,10 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   // All gauge sizes live here (SVG user units; the CSS scales the <svg> to the window).
   const GAUGE_CONFIG = {
-    // resetY: baseline of the "Resets ..." line, above the dial.
-    speedo: { size: 200, radius: 78, start: -135, end: 135, needleLength: 62, resetY: 11 },
-    fuel: { size: 200, radius: 78, start: -90, end: 90, needleLength: 62, resetY: 11 },
+    // resetY / captionY: baselines of the "Resets ..." line and the caption under it, below the dial.
+    // viewHeight: the view is taller than it is wide to leave room for that text.
+    speedo: { size: 200, viewHeight: 210, radius: 78, start: -135, end: 135, needleLength: 62, resetY: 185, captionY: 202 },
+    fuel: { size: 200, viewHeight: 210, radius: 78, start: -90, end: 90, needleLength: 62, resetY: 185, captionY: 202 },
     zones: {
       speedo: [
         { from: 0, to: 70, color: 'green' },
@@ -77,7 +78,7 @@
 
   function buildSpeedo(svg) {
     const cfg = GAUGE_CONFIG.speedo;
-    svg.setAttribute('viewBox', `0 0 ${cfg.size} ${cfg.size}`);
+    svg.setAttribute('viewBox', `0 0 ${cfg.size} ${cfg.viewHeight}`);
     drawZones(svg, cfg, GAUGE_CONFIG.zones.speedo);
     for (let v = 0; v <= 100; v += 10) {
       const a = percentToAngle(v, cfg.start, cfg.end);
@@ -91,7 +92,7 @@
       }
     }
     el('text', { x: C, y: C + 38, class: 'readout', 'text-anchor': 'middle' }, svg, '--');
-    el('text', { x: C, y: 192, class: 'caption', 'text-anchor': 'middle' }, svg, 'CURRENT SESSION');
+    el('text', { x: C, y: cfg.captionY, class: 'caption', 'text-anchor': 'middle' }, svg, 'CURRENT SESSION');
     el('text', { x: C, y: cfg.resetY, class: 'reset', 'text-anchor': 'middle' }, svg, '');
     svg._needle = drawNeedle(svg, cfg);
     setNeedle(svg._needle, cfg.start);
@@ -99,7 +100,7 @@
 
   function buildFuel(svg) {
     const cfg = GAUGE_CONFIG.fuel;
-    svg.setAttribute('viewBox', `0 0 ${cfg.size} ${cfg.size}`);
+    svg.setAttribute('viewBox', `0 0 ${cfg.size} ${cfg.viewHeight}`);
     drawZones(svg, cfg, GAUGE_CONFIG.zones.fuel);
     for (let v = 0; v <= 100; v += 25) {
       const a = percentToAngle(v, cfg.start, cfg.end);
@@ -119,7 +120,7 @@
     }, svg);
     el('text', { x: C, y: C + 28, class: 'readout small', 'text-anchor': 'middle' }, svg, '--');
     el('text', { x: C, y: cfg.resetY, class: 'reset', 'text-anchor': 'middle' }, svg, '');
-    el('text', { x: C, y: 192, class: 'caption', 'text-anchor': 'middle' }, svg, 'THIS WEEK');
+    el('text', { x: C, y: cfg.captionY, class: 'caption', 'text-anchor': 'middle' }, svg, 'THIS WEEK');
     svg._needle = drawNeedle(svg, cfg);
     setNeedle(svg._needle, cfg.start);
   }

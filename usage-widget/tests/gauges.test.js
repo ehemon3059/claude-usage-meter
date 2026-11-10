@@ -40,10 +40,16 @@ test('isLowFuel is true only below 10% remaining', () => {
   assert.strictEqual(G.isLowFuel(100), true);
 });
 
-test('reset time sits above each dial, inside the 200x200 view', () => {
+test('text under each dial: reset line one line above the caption, with room below the dial', () => {
   for (const key of ['speedo', 'fuel']) {
     const cfg = G.GAUGE_CONFIG[key];
-    const arcTop = 100 - cfg.radius - 3; // arc stroke is 6 units wide
-    assert.ok(cfg.resetY > 0 && cfg.resetY < arcTop - 4, `${key} resetY ${cfg.resetY} vs arc top ${arcTop}`);
+    // Lowest point of the arc (its ends), plus half the 6-unit stroke.
+    const arcBottom = 100 + cfg.radius * Math.max(0, -Math.cos((cfg.start * Math.PI) / 180)) + 3;
+    const gap = cfg.captionY - cfg.resetY;
+    assert.ok(gap >= 12 && gap <= 20, `${key}: reset ${cfg.resetY} should be one line above caption ${cfg.captionY}`);
+    // 13px reset text rises about 10 units above its baseline.
+    const space = cfg.resetY - 10 - arcBottom;
+    assert.ok(space >= 15, `${key}: only ${space.toFixed(1)} units between dial and text`);
+    assert.ok(cfg.captionY + 5 <= cfg.viewHeight, `${key}: caption ${cfg.captionY} runs past the view (${cfg.viewHeight})`);
   }
 });

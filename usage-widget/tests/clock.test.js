@@ -44,3 +44,19 @@ test('formatAgo describes how long ago usage was updated', () => {
   assert.strictEqual(C.formatAgo(now - 5 * 3600 * 1000, now), '5 h ago');
   assert.strictEqual(C.formatAgo(now - 2 * 86400 * 1000, now), '2 d ago');
 });
+
+test('clock date sits on the line above its caption, level with the gauges’ reset lines', () => {
+  const G = require('../gauges');
+  assert.strictEqual(C.CLOCK_CONFIG.dateY, G.GAUGE_CONFIG.speedo.resetY);
+  assert.strictEqual(C.CLOCK_CONFIG.captionY, G.GAUGE_CONFIG.speedo.captionY);
+  // Same view height as the gauges, so all three dials scale alike and their text lines up.
+  assert.ok(Number.isFinite(C.CLOCK_CONFIG.viewHeight));
+  assert.strictEqual(C.CLOCK_CONFIG.viewHeight, G.GAUGE_CONFIG.speedo.viewHeight);
+});
+
+test('clock face leaves room above the date line', () => {
+  const k = C.CLOCK_CONFIG;
+  // 13px date text rises about 10 units above its baseline; the face stroke adds 1.
+  const space = k.dateY - 10 - (k.cy + k.radius + 1);
+  assert.ok(space >= 15, `only ${space} units between face and date`);
+});
